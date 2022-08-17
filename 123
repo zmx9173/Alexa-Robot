@@ -1,0 +1,39 @@
+import robin_stocks as r
+import pandas as pd
+import datetime as dt
+import numpy as np
+
+r.login(gmail,password)
+stock = 'FIT'
+data = r.options.find_tradable_options_for_stock(stock, optionType='both')
+df = pd.DataFrame(data)
+
+now = dt.datetime.now()
+start = now + dt.timedelta(30)
+end = now + dt.timedelta(45)
+date_generated = [start + dt.timedelta(days=x) for x in range(0, (end-start).days)]
+
+date_list = []
+for date in date_generated:
+    date_list.append(date.strftime("%Y-%m-%d"))
+
+new_df = df[df['expiration_date'].isin(date_list)].reset_index(drop=True)
+test = new_df.strike_price.unique()
+strike_list = new_df.strike_price.unique().tolist()
+current_price = r.stocks.get_latest_price(stock)[0]
+strike_list.append(current_price)
+strike_list2 = sorted(strike_list,key=float)
+exp_date = sorted(new_df.expiration_date.unique())[-1]
+i = strike_list2.index(current_price)
+
+#refer to diagram for strike price
+strike_a = strike_list2[i-2] #long put strike price
+strike_b = strike_list2[i-1] #short put strike price
+strike_c = strike_list2[i+1] #short call strike price
+strike_d = strike_list2[i+2] #long call strike price
+
+print(strike_a,strike_b,strike_c,strike_d)
+
+robin_stocks.orders.order_buy_option_limit(price, symbol, quantity, expirationDate, strike, optionType='both', timeInForce='gfd')
+
+
